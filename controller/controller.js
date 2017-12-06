@@ -1,7 +1,7 @@
 var basicAuth = require('basic-auth');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var modelos = require ('../models/modelos').modelos;
+var model = require ('../models/model').model;
 var express = require('express');
 var app = express();
 
@@ -9,25 +9,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
  
 
 const jsrsasign = require('jsrsasign');
-// parse application/json
 app.use(bodyParser.json());
 exports.agregar = function(request, response){  
 
   response.setHeader('Content-Type', 'application/json');
   console.log(request.body.text);
   if (request.body.text && request.body.done && request.body.date) {
-    if(modelos.length>0){
-      var numero = (modelos[modelos.length-1].id);
+    if(model.length>0){
+      var num = (model[model.length-1].id);
     }
     else{
-      numero = 0;
+      num = 0;
     }
-    request.body.id = numero+1;
+    request.body.id = num+1;
     request.body.createdAt = new Date();
     request.body.updatedAt = new Date();
-    modelos.push(request.body);
-    // console.log(request.body);      // your JSON
-    response.send('{"id:":'+request.body.id+'}');    // echo the result back
+    model.push(request.body);
+    response.send('{"id:":'+request.body.id+'}'); 
   }else{
     response.status(400);
     response.send("Not Found");
@@ -37,52 +35,46 @@ exports.agregar = function(request, response){
 
 exports.mostrar = function(request,response){
     response.setHeader('Content-Type', 'application/json');
-    response.send(modelos);
+    response.send(model);
 };
 
 exports.eliminar = function(request,response){
     response.setHeader('Content-Type', 'application/json');
     var error = false;
-    for (var i = 0; i < modelos.length; i++){
-      if (modelos[i].id == request.params.id){
-        modelos.splice(i,1);
-        response.send("Eliminado");
+    for (var i = 0; i < model.length; i++){
+      if (model[i].id == request.params.id){
+        model.splice(i,1);
+        response.send("Borrado");
       }
     }
-      response.send("Not Found");
+      response.send("No se encontró");
 };
 
 exports.getToken = function(request,response){
   
   response.setHeader('Content-Type', 'application/json');
-  // Header
   var usernameR = request.body.username;
-  var passwordR = request.body.password;
+  var passw = request.body.password;
 
   let header = {
     alg: "HS256",
     typ: "JWT"
   };
 
-  //Payload
   let payload = { 
   };
 
-  // Reserved claims (metadata of the JWT)
-  payload.iat = jsrsasign.jws.IntDate.get('now'); // Fecha de generacion
-  // payload.exp = jsrsasign.jws.IntDate.get('now + 1day'); // Fecha de expiración
+  
+  payload.iat = jsrsasign.jws.IntDate.get('now'); 
   payload.user = usernameR;
-  payload.pass = passwordR;
+  payload.pass = passw;
 
-  // Private claims (our info we want to send)
   payload.secretCode = 'p4ssw0d';
   payload.currentState = 'purchase-cart';
 
-  // Signature = (header + payload + secret_phrase) * algoritmo
-  let secret_phrase = passwordR;
+  let secret_phrase = passw;
   let jwt = jsrsasign.jws.JWS.sign("HS256", JSON.stringify(header), JSON.stringify(payload), secret_phrase);
 
-  jwtResultado = {"token": jwt}
-  // Envia un JWT generado
-  response.send(jwtResultado);
+  jwtRes = {"token": jwt}
+  response.send(jwtRes);
 };

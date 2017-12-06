@@ -7,23 +7,21 @@ var app = express();
 
 
 
-const tasksController = require('./controller/tasks_controller.js');
-var modelos = require ('./models/modelos').modelos;
+const controller = require('./controller/controller.js');
+var model = require ('./models/model').model;
 
 app.use(bodyParser.urlencoded({ extended: true }));
- 
-// parse application/json
+
 app.use(bodyParser.json());
 
 const jsrsasign = require('jsrsasign');
 
-app.post('/api/tasks', tasksController.agregar);
+app.post('/api/tasks', controller.agregar);
 
-app.get('/api/tasks', tasksController.mostrar);
+app.get('/api/tasks', controller.mostrar);
 
-app.delete('/api/tasks/:id', tasksController.eliminar)
+app.post('/api/auth/token', controller.getToken );
 
-app.post('/api/auth/token', tasksController.getToken )
-
+app.delete('/api/tasks/:id', controller.eliminar);
 
 exports.app = app;
